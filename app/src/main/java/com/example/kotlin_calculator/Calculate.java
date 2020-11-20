@@ -193,31 +193,4 @@ public class Calculate {
         }
         return exp;
     }
-
-    /**
-     * 去掉小数部分尾部的0
-     * @param str
-     * @return
-     */
-    public static String deleteZero(String str) {
-
-        if (str.indexOf(".") > 0) {
-            //删掉尾数为0的字符
-            str = str.replaceAll("0+?$", "");
-            //结尾如果是小数点，则去掉
-            str = str.replaceAll("[.]$", "");
-        }
-        return str;
-    }
-
-//    /**
-//     * 除数为0的情况
-//     */
-//    String notZero(double d){
-//        if (d==0.0){
-//            return "除数不能为0";
-//        }else {
-//            return
-//        }
-//    }
 }
