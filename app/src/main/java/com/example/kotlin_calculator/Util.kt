@@ -36,6 +36,14 @@ class Util {
         }
 
         /**
+         * 删除前置的0
+         */
+         fun deleteHeadZero(s: String): String? {
+//        String newStr = s.replaceAll("^(0+)", "");
+            return s.replace("^0+".toRegex(), "")
+        }
+
+        /**
          * 判断是否为小数
          */
         fun judgeIsDecimal(num: String): Boolean {

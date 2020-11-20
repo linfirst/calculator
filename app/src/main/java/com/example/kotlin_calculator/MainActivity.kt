@@ -6,14 +6,16 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import com.example.kotlin_calculator.Calculate.exec
+import com.example.kotlin_calculator.Util.Companion.deleteHeadZero
 import com.example.kotlin_calculator.Util.Companion.deleteTailZero
+import com.example.kotlin_calculator.Util.Companion.judgeIsDecimal
 import com.example.kotlin_calculator.Util.Companion.trimZeroOfNumber
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
 
-    var historyFormula=mutableListOf<String>()
-    var reInput:Boolean=false
+    var historyFormula = mutableListOf<String>()
+    var reInput: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -25,11 +27,11 @@ class MainActivity : AppCompatActivity() {
         var temp = tv_formula.text as String
 
         //如果点击了"="则重新计算新的式子
-        if (reInput){
-            temp=""
+        if (reInput) {
+            temp = ""
             tv_formula.setText("")
             calculator_result.setText("0")
-            reInput=false
+            reInput = false
         }
 
         when (view) {
@@ -41,7 +43,7 @@ class MainActivity : AppCompatActivity() {
                 }
             }
 //            数字
-            tv1 ->clickNumber("$temp${1}")
+            tv1 -> clickNumber("$temp${1}")
             tv2 -> clickNumber("$temp${2}")
             tv3 -> clickNumber("$temp${3}")
             tv4 -> clickNumber("$temp${4}")
@@ -56,38 +58,42 @@ class MainActivity : AppCompatActivity() {
             multiplication -> tv_formula.setText("$temp×")
             minus -> tv_formula.setText("$temp-")
             add -> tv_formula.setText("$temp+")
-            left_parenthesis->tv_formula.setText("$temp(")
-            right_parenthesis->tv_formula.setText("$temp)")
+            left_parenthesis -> tv_formula.setText("$temp(")
+            right_parenthesis -> tv_formula.setText("$temp)")
         }
     }
 
     /**
      * 点击数字，马上显示结果
      */
-    fun clickNumber(formula:String){
+    fun clickNumber(formula: String) {
+        if (!(judgeIsDecimal(formula))) {
+            Log.i("EEEEEE",deleteHeadZero(formula).toString())
+            Log.i("FFFFFF",formula)
+            tv_formula.setText(deleteHeadZero(formula).toString())
+        }
         calculator_result.setTextSize(36.0f)
         tv_formula.setTextSize(36.0f)
-        tv_formula.setText(formula)
-        var result=exec(formula).toString()//计算结果
-        Log.i("DDDDDD",result)
-        result= trimZeroOfNumber(result)//去掉double尾部多余的0
+//        tv_formula.setText(formula)
+        var result = exec(formula).toString()//计算结果
+        Log.i("DDDDDD", result)
+        result = trimZeroOfNumber(result)//去掉double尾部多余的0
         calculator_result.setText(result)
-//        tv_formula.setText(trimZeroOfNumber(formula))
     }
 
     /**
      * 点击"="，显示计算结果
      */
-    fun result(view: View){
-        reInput=true
-        var formula:String=tv_formula.text.toString()//需计算的式子
-        var result=exec(formula).toString()//计算结果
-        result= trimZeroOfNumber(result)//去掉double尾部多余的0
+    fun result(view: View) {
+        reInput = true
+        var formula: String = tv_formula.text.toString()//需计算的式子
+        var result = exec(formula).toString()//计算结果
+        result = trimZeroOfNumber(result)//去掉double尾部多余的0
         historyFormula.add("$formula=$result")//保存历史式子
-        when(view){
-            equal->{
+        when (view) {
+            equal -> {
 //                calculator.setText(exec("-8*(((-2+4)+3)/((-1-5)*-2)-5)").toString())
-                Log.i(this.javaClass.name+"AAAAAAAAAA",formula)
+                Log.i(this.javaClass.name + "AAAAAAAAAA", formula)
                 calculator_result.setText("=$result")
                 calculator_result.setTextSize(43.0f)
                 tv_formula.setTextSize(30.0f)
