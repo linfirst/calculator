@@ -25,8 +25,7 @@ class MainActivity : AppCompatActivity() {
     //基本点击事件
     fun onClick(view: View) {
         var temp = tv_formula.text as String
-
-        //如果点击了"="则重新计算新的式子
+        //如果点击了"="则重新设置新的式子
         if (reInput) {
             temp = ""
             tv_formula.setText("")

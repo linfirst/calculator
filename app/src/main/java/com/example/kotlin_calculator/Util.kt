@@ -2,6 +2,9 @@ package com.example.kotlin_calculator
 
 import java.math.BigDecimal
 import java.text.NumberFormat
+import java.util.regex.Matcher
+import java.util.regex.Pattern
+import java.util.regex.PatternSyntaxException
 
 class Util {
 
@@ -52,6 +55,17 @@ class Util {
                 isdecimal = true
             }
             return isdecimal
+        }
+
+        /**
+         *判断是否为运算符号
+         */
+        @Throws(PatternSyntaxException::class)
+        fun isChinaPhoneLegal(str: String?): Boolean {
+            val regExp = "[+×÷-]"
+            val p: Pattern = Pattern.compile(regExp)
+            val m: Matcher = p.matcher(str)
+            return m.matches()
         }
     }
 
