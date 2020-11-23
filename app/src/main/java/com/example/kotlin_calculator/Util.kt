@@ -48,6 +48,7 @@ class Util {
 
         /**
          * 判断是否为小数
+         * Is it a decimal
          */
         fun judgeIsDecimal(num: String): Boolean {
             var isdecimal = false
@@ -61,11 +62,22 @@ class Util {
          *判断是否为运算符号
          */
         @Throws(PatternSyntaxException::class)
-        fun isChinaPhoneLegal(str: String?): Boolean {
+        fun isOperationSymbol(str: String?): Boolean {
             val regExp = "[+×÷-]"
             val p: Pattern = Pattern.compile(regExp)
             val m: Matcher = p.matcher(str)
             return m.matches()
+        }
+
+        /**
+         * 判断算式是否为空
+         */
+
+        fun isFormulaNotEmpty(formula:String):Boolean {
+            if (formula.isEmpty()){
+                return false
+            }
+            return true
         }
     }
 
