@@ -1,13 +1,14 @@
 package com.example.kotlin_calculator
 
-import android.graphics.Color
+import android.annotation.SuppressLint
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.os.CancellationSignal
 import android.util.Log
 import android.view.View
 import com.example.kotlin_calculator.Calculate.exec
+import com.example.kotlin_calculator.Util.Companion.deleteDecimalTailZero
 import com.example.kotlin_calculator.Util.Companion.deleteHeadZero
+import com.example.kotlin_calculator.Util.Companion.isDot
 import com.example.kotlin_calculator.Util.Companion.isFormulaNotEmpty
 import com.example.kotlin_calculator.Util.Companion.isOperationSymbol
 import com.example.kotlin_calculator.Util.Companion.judgeIsDecimal
@@ -18,10 +19,10 @@ class MainActivity : AppCompatActivity() {
 
 
     //记录历史算式
-    var historyFormula = mutableListOf<String>()
+    private var historyFormula = mutableListOf<String>()
 
     //是否重新输入算式
-    var reInput: Boolean = false
+    private var reInput: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -29,23 +30,20 @@ class MainActivity : AppCompatActivity() {
     }
 
     //基本点击事件
+    @SuppressLint("SetTextI18n")
     fun onClick(view: View) {
-        var tempFormula = tv_formula.text.toString()
+        var tempFormula = calculator_formula.text.toString()
         Log.i("基本点击事件", tempFormula)
         //如果点击了"="则重新设置新的式子
-        if (reInput) {
-            tempFormula = ""
-            tv_formula.text = ""
-            calculator_result.text = "0"
-            reInput = false
-        }
+
+
 
         when (view) {
 
 //            数字
             tv0 -> {
                 if (tempFormula == "0") {
-                    tv_formula.text = "0"
+                    calculator_formula.text = "0"
                 } else {
                     clickNumber("$tempFormula${0}")
                 }
@@ -60,13 +58,16 @@ class MainActivity : AppCompatActivity() {
             tv8 -> clickNumber("$tempFormula${8}")
             tv9 -> clickNumber("$tempFormula${9}")
 //            符号
-            dot -> tv_formula.text = "$tempFormula."
-            devide -> tv_formula.text = "$tempFormula÷"
-            multiplication -> tv_formula.text = "$tempFormula×"
-            minus -> tv_formula.text = "$tempFormula-"
-            add -> tv_formula.text = "$tempFormula+"
-            left_parenthesis -> tv_formula.text = "$tempFormula("
-            right_parenthesis -> tv_formula.text = "$tempFormula)"
+            dot, devide, multiplication, minus, add, left_parenthesis, right_parenthesis -> clickOperator(
+                tempFormula,
+                view
+            )
+//            devide -> setCalculatorFormula("$tempFormula÷")
+//            multiplication -> setCalculatorFormula("$tempFormula×")
+//            minus -> setCalculatorFormula("$tempFormula-")
+//            add -> setCalculatorFormula("$tempFormula+")
+//            left_parenthesis -> setCalculatorFormula("$tempFormula(")
+//            right_parenthesis -> setCalculatorFormula("$tempFormula)")
 //            等于，删除
             equal -> clickEqual(tempFormula)
             delete -> clickDelete(tempFormula)
@@ -87,15 +88,49 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-
     /**
      * 点击数字
      */
     private fun clickNumber(formula: String) {
+        var formula:String=formula
+
+
+
+        if (reInput) {
+            formula=formula.last().toString()
+            calculator_formula.text = ""
+            calculator_result.text = "0"
+            reInput = false
+        }
         calculator_result.textSize = 36.0f
-        tv_formula.textSize = 36.0f
+        calculator_formula.textSize = 36.0f
         setCalculatorFormula(formula)
         setResultText(calculate(formula))
+    }
+
+    /**
+     * 点击『+-×÷().』
+     */
+    private fun clickOperator(formula: String, view: View) {
+
+        if (formula.isEmpty()){
+            return
+        }
+
+        if (isOperationSymbol(formula.last().toString())||isDot(formula)) {
+            when(view){
+                dot -> setCalculatorFormula("$formula.")
+            }
+        } else {
+            when (view) {
+                devide -> setCalculatorFormula("$formula÷")
+                multiplication -> setCalculatorFormula("$formula×")
+                minus -> setCalculatorFormula("$formula-")
+                add -> setCalculatorFormula("$formula+")
+                left_parenthesis -> setCalculatorFormula("$formula(")
+                right_parenthesis -> setCalculatorFormula("$formula)")
+            }
+        }
     }
 
     /**
@@ -103,31 +138,35 @@ class MainActivity : AppCompatActivity() {
      */
     private fun clickEqual(formula: String) {
         calculator_result.textSize = 40.0f
-        tv_formula.textSize = 30.0f
+        calculator_formula.textSize = 30.0f
         historyFormula.add("$formula=${calculator_result.text}")//保存历史式子
-        reInput=true
+        reInput = true
         setCalculatorFormula(formula)
-        setResultText("=${calculator_result.text}")
+        Log.i("点击=:",formula)
+        Log.i("点击=11111:",calculate(formula))
+        setResultText("=${calculate(formula)}")
     }
 
     /**
      * 点击删除
      */
     private fun clickDelete(formula: String) {//9-9
-        var temp=""
-        //如果没有字符了，则直接设置为0
+        var temp = ""
+        //如果没有字符了，则直接设置为空
         if (formula.length > 1) {
             setCalculatorFormula(formula.substring(0, formula.length - 1))//9-
-            temp=tv_formula.text.toString()//重新获取删除后的式子
+            temp = calculator_formula.text.toString()//重新获取删除后的式子
         } else {
-            setCalculatorFormula("0")
+            setCalculatorFormula("")
+            calculator_result.text="0"
         }
 
         //最后一个字符是否含于「+-×÷.」。如果是则删除，然后再运算
-        if (temp.length>=2&&isOperationSymbol(temp[temp.length-1].toString())) {
+        if (temp.length >= 2 && isOperationSymbol(temp[temp.length - 1].toString())) {
             setResultText(calculate(temp.substring(0, temp.length - 1)))
         } else {
-            setResultText(calculate(temp))
+//            setResultText(calculate(temp))
+            calculator_result.text="0"
         }
     }
 
@@ -135,11 +174,12 @@ class MainActivity : AppCompatActivity() {
      * 设置要显示计算结果
      */
     private fun setResultText(result: String) {
-        //设置结果text
+//        calculator_result.text = trimZeroOfNumber(result)
+//        //设置结果text
         calculator_result.text = if (judgeIsDecimal(result)) {
             //去掉double尾部多余的0
-            trimZeroOfNumber(result)
-        } else {
+            deleteDecimalTailZero(result)
+        }else {
             //去掉整数头部多余的0
             deleteHeadZero(result).toString()
         }
@@ -148,9 +188,8 @@ class MainActivity : AppCompatActivity() {
     /**
      * 设置要显示的运算式子
      */
-
     private fun setCalculatorFormula(formula: String) {
-        tv_formula.text = formula
+        calculator_formula.text = formula
     }
 
 
@@ -158,7 +197,7 @@ class MainActivity : AppCompatActivity() {
      * 清屏
      */
     private fun clearScreen() {
-        tv_formula.text = ""
+        calculator_formula.text = ""
         calculator_result.text = "0"
     }
 

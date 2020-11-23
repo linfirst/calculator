@@ -17,8 +17,8 @@ class Util {
         fun trimZeroOfNumber(value: Any): String {
             val temp: Any = BigDecimal(value.toString())
             val fmt: NumberFormat = NumberFormat.getInstance()
-            fmt.setMaximumFractionDigits(100)
-            fmt.setGroupingUsed(false)
+            fmt.maximumFractionDigits = 100
+            fmt.isGroupingUsed = false
             return fmt.format(temp)
         }
 
@@ -27,7 +27,7 @@ class Util {
          * @param str
          * @return
          */
-        fun deleteTailZero(str: String): String {
+        fun deleteDecimalTailZero(str: String): String {
             var str = str
             if (str.indexOf(".") > 0) {
                 //删掉尾数为0的字符
@@ -41,7 +41,7 @@ class Util {
         /**
          * 删除前置的0
          */
-         fun deleteHeadZero(s: String): String? {
+        fun deleteHeadZero(s: String): String? {
 //        String newStr = s.replaceAll("^(0+)", "");
             return s.replace("^0+".toRegex(), "")
         }
@@ -63,7 +63,7 @@ class Util {
          */
         @Throws(PatternSyntaxException::class)
         fun isOperationSymbol(str: String?): Boolean {
-            val regExp = "[+×÷-]"
+            val regExp = "[+×÷().-]"
             val p: Pattern = Pattern.compile(regExp)
             val m: Matcher = p.matcher(str)
             return m.matches()
@@ -72,13 +72,26 @@ class Util {
         /**
          * 判断算式是否为空
          */
-
-        fun isFormulaNotEmpty(formula:String):Boolean {
-            if (formula.isEmpty()){
+        fun isFormulaNotEmpty(formula: String): Boolean {
+            if (formula.isEmpty()) {
                 return false
             }
             return true
         }
+
+        /**
+         * 首位为0，第二位只能跟小数点
+         * 是否为小数点
+         */
+        fun isDot(formula: String): Boolean {
+            return formula.length==2&&formula.first().toString()=="0"
+        }
+        /**
+         *防止「+-*÷」0的情况
+         *
+         */
+
+
     }
 
 }
