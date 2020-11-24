@@ -5,15 +5,15 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.kotlin_calculator.Calculate.exec
+import com.example.kotlin_calculator.Util.Companion.checkExpression
 import com.example.kotlin_calculator.Util.Companion.deleteDecimalTailZero
 import com.example.kotlin_calculator.Util.Companion.deleteHeadZero
-import com.example.kotlin_calculator.Util.Companion.isDot
-import com.example.kotlin_calculator.Util.Companion.isFormulaNotEmpty
+import com.example.kotlin_calculator.Util.Companion.isBracketMatching
 import com.example.kotlin_calculator.Util.Companion.isOperationSymbol
 import com.example.kotlin_calculator.Util.Companion.isSymbolZero
 import com.example.kotlin_calculator.Util.Companion.judgeIsDecimal
-import com.example.kotlin_calculator.Util.Companion.trimZeroOfNumber
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
@@ -22,22 +22,23 @@ class MainActivity : AppCompatActivity() {
     //记录历史算式
     private var historyFormula = mutableListOf<String>()
 
-    //是否重新输入算式
+    //是否重新输入算式(如果点击了"="则设置新的式子)
     private var reInput: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        val historyItem:List<String> = listOf("1","123","23","123123","21323")
+        recycler_view.adapter = HistoryAdapter(historyItem)
+        recycler_view.layoutManager = LinearLayoutManager(this)
+        recycler_view.setHasFixedSize(true)
     }
 
     //基本点击事件
     @SuppressLint("SetTextI18n")
     fun onClick(view: View) {
         var tempFormula = calculator_formula.text.toString()
-        Log.i("基本点击事件", tempFormula)
-        //如果点击了"="则重新设置新的式子
-
-
         when (view) {
 
 //          数字
@@ -77,10 +78,10 @@ class MainActivity : AppCompatActivity() {
      * 返回计算结果
      */
     private fun calculate(formula: String): String {
-        return if (isFormulaNotEmpty(formula)) {
+        return if (formula.isNotEmpty()&& checkExpression(formula)) {
             exec(formula).toString()
         } else {
-            ""
+            "输入错误"
         }
     }
 
@@ -97,8 +98,9 @@ class MainActivity : AppCompatActivity() {
         ) {
             return
         }
-
+        //如果点击了"="则设置新的算式
         if (reInput) {
+            //获取最后一个字符
             formula = formula.last().toString()
             calculator_formula.text = ""
             calculator_result.text = "0"
@@ -115,6 +117,7 @@ class MainActivity : AppCompatActivity() {
      */
     private fun clickOperator(formula: String, view: View) {
 
+        //算式开头只能输入负数
         if (formula.isEmpty()) {
             when(view){
                 minus -> setCalculatorFormula("$formula-")
@@ -157,23 +160,27 @@ class MainActivity : AppCompatActivity() {
     /**
      * 点击删除
      */
-    private fun clickDelete(formula: String) {//9-9
+    private fun clickDelete(formula: String) {
         var temp = ""
+
+        println(formula)
+
         //如果没有字符了，则直接设置为空
         if (formula.length > 1) {
-            setCalculatorFormula(formula.substring(0, formula.length - 1))//9-
-            temp = calculator_formula.text.toString()//重新获取删除后的式子
+            setCalculatorFormula(formula.substring(0, formula.length - 1))
+            ////重新获取删除后的式子,下面计算需要用到
+            temp = calculator_formula.text.toString()
         } else {
             setCalculatorFormula("")
-            calculator_result.text = "0"
+            setResultText("0")
+            return
         }
 
         //最后一个字符是否含于「+-×÷.」。如果是则删除，然后再运算
         if (temp.length >= 2 && isOperationSymbol(temp[temp.length - 1].toString())) {
             setResultText(calculate(temp.substring(0, temp.length - 1)))
         } else {
-//            setResultText(calculate(temp))
-            calculator_result.text = "0"
+            setResultText(calculate(temp))
         }
     }
 
@@ -181,7 +188,6 @@ class MainActivity : AppCompatActivity() {
      * 设置要显示计算结果
      */
     private fun setResultText(result: String) {
-//        calculator_result.text = trimZeroOfNumber(result)
 //        //设置结果text
         calculator_result.text = if (judgeIsDecimal(result)) {
             //去掉double尾部多余的0
