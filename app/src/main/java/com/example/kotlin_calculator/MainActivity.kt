@@ -40,8 +40,9 @@ class MainActivity : AppCompatActivity() {
 
         when (view) {
 
-//            数字
+//          数字
             tv0 -> {
+                //首位为0，则一直置为0
                 if (tempFormula == "0") {
                     calculator_formula.text = "0"
                 } else {
@@ -115,10 +116,14 @@ class MainActivity : AppCompatActivity() {
     private fun clickOperator(formula: String, view: View) {
 
         if (formula.isEmpty()) {
+            when(view){
+                minus -> setCalculatorFormula("$formula-")
+            }
             return
         }
 
-        if (isOperationSymbol(formula.last().toString()) || isDot(formula)) {
+        //禁止连续两次输入符号
+        if (isOperationSymbol(formula.last().toString())) {
             when (view) {
 
             }
