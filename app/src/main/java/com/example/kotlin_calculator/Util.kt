@@ -61,13 +61,23 @@ class Util {
         /**
          *判断是否为运算符号
          */
-        @Throws(PatternSyntaxException::class)
         fun isOperationSymbol(str: String?): Boolean {
-            val regExp = "[+×÷().-]"
+            return regular("[+×÷().-]",str)
+        }
+
+        /**
+         * 除了小数点的符号
+         */
+        private fun isOperationSymbolExceptDot(str: String?): Boolean {
+            return regular("[+×÷()-]",str)
+        }
+
+        private fun regular(regExp: String?,str: String?):Boolean{
             val p: Pattern = Pattern.compile(regExp)
             val m: Matcher = p.matcher(str)
             return m.matches()
         }
+
 
         /**
          * 判断算式是否为空
@@ -80,18 +90,17 @@ class Util {
         }
 
         /**
-         * 首位为0，第二位只能跟小数点
-         * 是否为小数点
+         * 首位为0，第二位只能跟小数点和符号
          */
         fun isDot(formula: String): Boolean {
             return formula.length==2&&formula.first().toString()=="0"
         }
         /**
-         *防止「+-*÷」0的情况
-         *
+         *防止「+-*÷()」0的情况
          */
-
-
+        fun isSymbolZero(formula: String):Boolean{
+            return formula[formula.length-2]=='0'&& isOperationSymbolExceptDot(formula[formula.length-3].toString())
+        }
     }
 
 }

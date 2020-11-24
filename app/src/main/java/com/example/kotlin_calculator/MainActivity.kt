@@ -11,6 +11,7 @@ import com.example.kotlin_calculator.Util.Companion.deleteHeadZero
 import com.example.kotlin_calculator.Util.Companion.isDot
 import com.example.kotlin_calculator.Util.Companion.isFormulaNotEmpty
 import com.example.kotlin_calculator.Util.Companion.isOperationSymbol
+import com.example.kotlin_calculator.Util.Companion.isSymbolZero
 import com.example.kotlin_calculator.Util.Companion.judgeIsDecimal
 import com.example.kotlin_calculator.Util.Companion.trimZeroOfNumber
 import kotlinx.android.synthetic.main.activity_main.*
@@ -37,7 +38,6 @@ class MainActivity : AppCompatActivity() {
         //如果点击了"="则重新设置新的式子
 
 
-
         when (view) {
 
 //            数字
@@ -62,13 +62,8 @@ class MainActivity : AppCompatActivity() {
                 tempFormula,
                 view
             )
-//            devide -> setCalculatorFormula("$tempFormula÷")
-//            multiplication -> setCalculatorFormula("$tempFormula×")
-//            minus -> setCalculatorFormula("$tempFormula-")
-//            add -> setCalculatorFormula("$tempFormula+")
-//            left_parenthesis -> setCalculatorFormula("$tempFormula(")
-//            right_parenthesis -> setCalculatorFormula("$tempFormula)")
-//            等于，删除
+
+//          等于，删除
             equal -> clickEqual(tempFormula)
             delete -> clickDelete(tempFormula)
 //            清空
@@ -92,12 +87,18 @@ class MainActivity : AppCompatActivity() {
      * 点击数字
      */
     private fun clickNumber(formula: String) {
-        var formula:String=formula
+        var formula: String = formula
 
-
+        //排除0开头的整数
+        if (formula.first() == '0' && formula.length == 2 || (if (formula.length > 2) isSymbolZero(
+                formula
+            ) else false)
+        ) {
+            return
+        }
 
         if (reInput) {
-            formula=formula.last().toString()
+            formula = formula.last().toString()
             calculator_formula.text = ""
             calculator_result.text = "0"
             reInput = false
@@ -113,16 +114,17 @@ class MainActivity : AppCompatActivity() {
      */
     private fun clickOperator(formula: String, view: View) {
 
-        if (formula.isEmpty()){
+        if (formula.isEmpty()) {
             return
         }
 
-        if (isOperationSymbol(formula.last().toString())||isDot(formula)) {
-            when(view){
-                dot -> setCalculatorFormula("$formula.")
+        if (isOperationSymbol(formula.last().toString()) || isDot(formula)) {
+            when (view) {
+
             }
         } else {
             when (view) {
+                dot -> setCalculatorFormula("$formula.")
                 devide -> setCalculatorFormula("$formula÷")
                 multiplication -> setCalculatorFormula("$formula×")
                 minus -> setCalculatorFormula("$formula-")
@@ -142,8 +144,8 @@ class MainActivity : AppCompatActivity() {
         historyFormula.add("$formula=${calculator_result.text}")//保存历史式子
         reInput = true
         setCalculatorFormula(formula)
-        Log.i("点击=:",formula)
-        Log.i("点击=11111:",calculate(formula))
+        Log.i("点击=:", formula)
+        Log.i("点击=11111:", calculate(formula))
         setResultText("=${calculate(formula)}")
     }
 
@@ -158,7 +160,7 @@ class MainActivity : AppCompatActivity() {
             temp = calculator_formula.text.toString()//重新获取删除后的式子
         } else {
             setCalculatorFormula("")
-            calculator_result.text="0"
+            calculator_result.text = "0"
         }
 
         //最后一个字符是否含于「+-×÷.」。如果是则删除，然后再运算
@@ -166,7 +168,7 @@ class MainActivity : AppCompatActivity() {
             setResultText(calculate(temp.substring(0, temp.length - 1)))
         } else {
 //            setResultText(calculate(temp))
-            calculator_result.text="0"
+            calculator_result.text = "0"
         }
     }
 
@@ -179,7 +181,7 @@ class MainActivity : AppCompatActivity() {
         calculator_result.text = if (judgeIsDecimal(result)) {
             //去掉double尾部多余的0
             deleteDecimalTailZero(result)
-        }else {
+        } else {
             //去掉整数头部多余的0
             deleteHeadZero(result).toString()
         }
